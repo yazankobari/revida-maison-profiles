@@ -20,14 +20,25 @@
 fetch('profiles.json').then(r => r.json()).then(data => {
   document.getElementById('title').textContent = data.title;
   document.getElementById('subtitle').textContent = data.subtitle;
-  const grid = document.getElementById('grid');
+  const main = document.querySelector('main');
+  main.innerHTML = '';
+  let grid = null, group = null;
   data.profiles.forEach(p => {
+    if (p.group !== group) {
+      group = p.group;
+      const h = document.createElement('h2');
+      h.className = 'group';
+      h.textContent = group;
+      grid = document.createElement('div');
+      grid.className = 'grid';
+      main.append(h, grid);
+    }
     const a = document.createElement('a');
     a.className = 'card';
     a.href = 'viewer.html?p=' + encodeURIComponent(p.id);
     a.innerHTML = '<div class="thumb"><img loading="lazy" alt=""></div><div class="num"></div><div class="name"></div><div class="note"></div>';
     a.querySelector('img').src = 'profiles/' + p.id + '/page-01.jpg';
-    a.querySelector('.num').textContent = 'Concept ' + p.id + ' · ' + p.pages + ' pages';
+    a.querySelector('.num').textContent = (p.id.startsWith('S') ? 'Structure ' + p.id.slice(1, 3) : 'Concept ' + p.id) + ' · ' + p.pages + ' pages';
     a.querySelector('.name').textContent = p.name;
     a.querySelector('.note').textContent = p.note;
     grid.appendChild(a);
