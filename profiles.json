@@ -1,0 +1,16 @@
+{
+  "title": "The Art of Living Spaces",
+  "subtitle": "Company profile concepts",
+  "profiles": [
+    {"id": "01", "name": "Luxury Editorial Magazine", "note": "An interiors magazine: masthead cover, contents and feature stories", "pages": 12, "orientation": "portrait"},
+    {"id": "02", "name": "Architectural Studio Portfolio", "note": "Projects first, with large visuals and project summaries", "pages": 10, "orientation": "landscape"},
+    {"id": "03", "name": "Premium Corporate Profile", "note": "Capabilities, services and credibility, in the order Gulf clients expect", "pages": 12, "orientation": "landscape"},
+    {"id": "04", "name": "Interior Design Lookbook", "note": "A catalogue of collections: stone, textile, timber, light", "pages": 12, "orientation": "portrait"},
+    {"id": "05", "name": "Transformation Story", "note": "The renovation journey, before and after", "pages": 12, "orientation": "landscape"},
+    {"id": "06", "name": "Minimalist Design Monograph", "note": "A quiet gallery book: three principles, one image per page", "pages": 12, "orientation": "portrait"},
+    {"id": "07", "name": "Client Journey Profile", "note": "From the first conversation to handover", "pages": 12, "orientation": "landscape"},
+    {"id": "08", "name": "Project Case Study Collection", "note": "Each project told as its own design story", "pages": 14, "orientation": "landscape"},
+    {"id": "09", "name": "Lifestyle and Spaces Profile", "note": "Organised by space: living, dining, kitchen, working", "pages": 12, "orientation": "portrait"},
+    {"id": "10", "name": "Contemporary Design Studio Book", "note": "Craft and making: raw, making, purpose, care", "pages": 12, "orientation": "portrait"}
+  ]
+}

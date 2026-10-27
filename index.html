@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Revida Maison · The Art of Living Spaces</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="landing">
+<header>
+  <img src="assets/logo.png" alt="Revida Maison">
+  <h1 id="title">The Art of Living Spaces</h1>
+  <div class="sub" id="subtitle">Company profile concepts</div>
+</header>
+<main><div class="grid" id="grid"></div></main>
+<footer>Concept proposals · Images marked "AI-generated concept image" are mood imagery, not completed projects</footer>
+<script>
+fetch('profiles.json').then(r => r.json()).then(data => {
+  document.getElementById('title').textContent = data.title;
+  document.getElementById('subtitle').textContent = data.subtitle;
+  const grid = document.getElementById('grid');
+  data.profiles.forEach(p => {
+    const a = document.createElement('a');
+    a.className = 'card';
+    a.href = 'viewer.html?p=' + encodeURIComponent(p.id);
+    a.innerHTML = '<div class="thumb"><img loading="lazy" alt=""></div><div class="num"></div><div class="name"></div><div class="note"></div>';
+    a.querySelector('img').src = 'profiles/' + p.id + '/page-01.jpg';
+    a.querySelector('.num').textContent = 'Concept ' + p.id + ' · ' + p.pages + ' pages';
+    a.querySelector('.name').textContent = p.name;
+    a.querySelector('.note').textContent = p.note;
+    grid.appendChild(a);
+  });
+});
+</script>
+</body>
+</html>

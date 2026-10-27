@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#24150a">
+<title>Revida Maison · Company profile</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="viewer">
+<div class="bar">
+  <a href="./">All concepts</a>
+  <div class="title" id="title">Revida Maison</div>
+  <button type="button" id="full">Full screen</button>
+</div>
+<div class="stage" id="stage"><div id="book"></div></div>
+<div class="controls">
+  <button type="button" id="prev" aria-label="Previous page">‹</button>
+  <div class="count" id="count">Cover</div>
+  <button type="button" id="next" aria-label="Next page">›</button>
+</div>
+<div class="hint">Swipe or drag a page corner to turn the page</div>
+<script src="assets/page-flip.browser.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('p') || '01';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let flip = null, profile = null;
+
+function label(i, total) {
+  if (i === 0) return 'Cover';
+  if (i >= total - 1) return 'Back cover';
+  const single = flip && flip.getOrientation() === 'portrait';
+  return single ? 'Page ' + (i + 1) + ' of ' + total : 'Pages ' + (i + 1) + '–' + Math.min(i + 2, total) + ' of ' + total;
+}
+
+function build() {
+  const stage = document.getElementById('stage');
+  const old = document.getElementById('book');
+  const book = document.createElement('div');
+  book.id = 'book';
+  old.replaceWith(book);
+  if (flip) { flip.destroy(); flip = null; }
+  const land = profile.orientation === 'landscape';
+  const pw = land ? 1300 : 920, ph = land ? 920 : 1300;  // one page, px
+  const W = stage.clientWidth - 8, H = stage.clientHeight - 8;
+  const spread = W > H * 1.05 && W > 640;               // two pages side by side only when there is room
+  const scale = Math.min(W / (pw * (spread ? 2 : 1)), H / ph);
+  const w = Math.floor(pw * scale), h = Math.floor(ph * scale);
+  for (let k = 1; k <= profile.pages; k++) {
+    const pg = document.createElement('div');
+    pg.className = 'page';
+    if (k === 1 || k === profile.pages) pg.dataset.density = 'hard';
+    const img = document.createElement('img');
+    img.src = 'profiles/' + profile.id + '/page-' + String(k).padStart(2, '0') + '.jpg';
+    img.alt = profile.name + ', page ' + k;
+    img.decoding = 'async';
+    pg.appendChild(img);
+    book.appendChild(pg);
+  }
+  flip = new St.PageFlip(book, {
+    width: w, height: h, size: 'fixed', showCover: true, usePortrait: !spread,
+    maxShadowOpacity: .45, mobileScrollSupport: false, flippingTime: reduce ? 250 : 800,
+  });
+  flip.loadFromHTML(book.querySelectorAll('.page'));
+  flip.on('flip', e => { document.getElementById('count').textContent = label(e.data, flip.getPageCount()); });
+  document.getElementById('count').textContent = 'Cover';
+}
+
+fetch('profiles.json').then(r => r.json()).then(data => {
+  profile = data.profiles.find(p => p.id === id) || data.profiles[0];
+  document.title = 'Revida Maison · ' + profile.name;
+  document.getElementById('title').textContent = profile.name;
+  build();
+  let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(build, 250); });
+});
+document.getElementById('prev').onclick = () => flip && flip.flipPrev();
+document.getElementById('next').onclick = () => flip && flip.flipNext();
+addEventListener('keydown', e => {
+  if (!flip) return;
+  if (e.key === 'ArrowRight') flip.flipNext();
+  if (e.key === 'ArrowLeft') flip.flipPrev();
+});
+document.getElementById('full').onclick = () => {
+  const el = document.documentElement;
+  (document.fullscreenElement ? document.exitFullscreen() : (el.requestFullscreen ? el.requestFullscreen() : Promise.reject())).catch(() => {});
+};
+if (!document.documentElement.requestFullscreen) document.getElementById('full').hidden = true;
+</script>
+</body>
+</html>
