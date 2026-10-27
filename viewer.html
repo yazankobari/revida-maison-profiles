@@ -67,6 +67,8 @@ function build() {
   flip.loadFromHTML(book.querySelectorAll('.page'));
   flip.on('flip', e => { document.getElementById('count').textContent = label(e.data, flip.getPageCount()); });
   document.getElementById('count').textContent = 'Cover';
+  const hint = document.querySelector('.hint');
+  hint.textContent = land && !spread && H > W ? 'Turn your phone sideways for a larger view · swipe to turn the page' : 'Swipe or drag a page corner to turn the page';
 }
 
 fetch('profiles.json').then(r => r.json()).then(data => {
