@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Revida Maison · Company Profile</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  .bar .group { display: flex; gap: 8px; }
+  .hint { font-size: 13px; }
+  .count { font-size: 13px; }
+  .bar a[aria-current="page"] { background: rgba(243, 232, 216, .14); }
+  .ar-ui .count, .ar-ui .hint, .ar-ui .bar a, .ar-ui .bar button { letter-spacing: 0; text-transform: none; font-family: Tajawal, var(--body); font-size: 14px; }
+  @media (max-width: 560px) { .bar .title { display: none; } .bar a, .bar button { padding: 9px 11px; } }
+</style>
+</head>
+<body class="viewer">
+<div class="bar">
+  <div class="group"><a id="en" href="?lang=en">English</a><a id="ar" href="?lang=ar" lang="ar">العربية</a></div>
+  <div class="title" id="title">Revida Maison · Company Profile</div>
+  <div class="group"><a id="pdf" href="#" download>PDF</a><button type="button" id="full">Full screen</button></div>
+</div>
+<div class="stage" id="stage"><div id="book"></div></div>
+<div class="controls">
+  <button type="button" id="prev" aria-label="Previous page">‹</button>
+  <div class="count" id="count">Cover</div>
+  <button type="button" id="next" aria-label="Next page">›</button>
+</div>
+<div class="hint" id="hint">Swipe or drag a page corner to turn the page</div>
+<script src="assets/page-flip.browser.js"></script>
+<script>
+// One profile, two languages. Arabic reads right to left: pages are loaded in reverse and the book opens at its last page.
+const BOOKS = {
+  en: { dir: 'profiles/company-en/', pages: 24, pdf: 'downloads/Revida-Maison-Company-Profile-EN.pdf', title: 'Revida Maison · Company Profile',
+        t: { cover: 'Cover', back: 'Back cover', page: (a, n) => 'Page ' + a + ' of ' + n, pages: (a, b, n) => 'Pages ' + a + '–' + b + ' of ' + n,
+             hint: 'Swipe or drag a page corner to turn the page', full: 'Full screen', prev: 'Previous page', next: 'Next page' } },
+  ar: { dir: 'profiles/company-ar/', pages: 24, pdf: 'downloads/Revida-Maison-Company-Profile-AR.pdf', title: 'ريفيدا ميزون · الملف التعريفي', rtl: true,
+        t: { cover: 'الغلاف', back: 'الغلاف الخلفي', page: (a, n) => 'صفحة ' + a + ' من ' + n, pages: (a, b, n) => 'الصفحات ' + a + '–' + b + ' من ' + n,
+             hint: 'اسحب الصفحة أو زاوية الصفحة لقلبها', full: 'ملء الشاشة', prev: 'الصفحة السابقة', next: 'الصفحة التالية' } },
+};
+const lang = new URLSearchParams(location.search).get('lang') === 'ar' ? 'ar' : 'en';
+const B = BOOKS[lang], T = B.t, N = B.pages;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let flip = null;
+
+document.documentElement.lang = lang;
+document.title = B.title;
+document.body.classList.toggle('ar-ui', !!B.rtl);
+document.getElementById('title').textContent = B.title;
+document.getElementById(lang).setAttribute('aria-current', 'page');
+const pdf = document.getElementById('pdf');
+pdf.href = B.pdf;
+pdf.setAttribute('download', B.pdf.split('/').pop());
+document.getElementById('full').textContent = T.full;
+document.getElementById('hint').textContent = T.hint;
+// In Arabic the forward button sits on the left, as in a printed Arabic book.
+const fwd = document.getElementById(B.rtl ? 'prev' : 'next'), back = document.getElementById(B.rtl ? 'next' : 'prev');
+fwd.textContent = B.rtl ? '‹' : '›'; back.textContent = B.rtl ? '›' : '‹';
+fwd.setAttribute('aria-label', T.next); back.setAttribute('aria-label', T.prev);
+
+// reading index (0 = cover) for the library's page index
+const read = i => B.rtl ? N - 1 - i : i;
+function label(i) {
+  const r = read(i);
+  if (r === 0) return T.cover;
+  if (r >= N - 1) return T.back;
+  if (flip.getOrientation() === 'portrait') return T.page(r + 1, N);
+  const a = Math.min(r, read(Math.min(i + 1, N - 1))) + 1;
+  return T.pages(a, Math.min(a + 1, N), N);
+}
+
+function build() {
+  const stage = document.getElementById('stage');
+  const book = document.createElement('div');
+  book.id = 'book';
+  document.getElementById('book').replaceWith(book);
+  if (flip) { flip.destroy(); flip = null; }
+  const pw = 920, ph = 1300;
+  const W = stage.clientWidth - 8, H = stage.clientHeight - 8;
+  const spread = W > H * 1.05 && W > 640;
+  const scale = Math.min(W / (pw * (spread ? 2 : 1)), H / ph);
+  for (let j = 0; j < N; j++) {
+    const k = B.rtl ? N - j : j + 1;   // file number shown at library index j
+    const pg = document.createElement('div');
+    pg.className = 'page';
+    if (j === 0 || j === N - 1) pg.dataset.density = 'hard';
+    const img = document.createElement('img');
+    img.src = B.dir + 'page-' + String(k).padStart(2, '0') + '.jpg';
+    img.alt = B.title + ', ' + k;
+    img.decoding = 'async';
+    pg.appendChild(img);
+    book.appendChild(pg);
+  }
+  flip = new St.PageFlip(book, {
+    width: Math.floor(pw * scale), height: Math.floor(ph * scale), size: 'fixed', showCover: true, usePortrait: !spread,
+    startPage: B.rtl ? N - 1 : 0, maxShadowOpacity: .45, mobileScrollSupport: false, flippingTime: reduce ? 250 : 800,
+  });
+  flip.loadFromHTML(book.querySelectorAll('.page'));
+  flip.on('flip', e => { document.getElementById('count').textContent = label(e.data); });
+  document.getElementById('count').textContent = label(flip.getCurrentPageIndex());
+}
+build();
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(build, 250); });
+const goFwd = () => flip && (B.rtl ? flip.flipPrev() : flip.flipNext());
+const goBack = () => flip && (B.rtl ? flip.flipNext() : flip.flipPrev());
+fwd.onclick = goFwd; back.onclick = goBack;
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') flip && flip.flipNext();
+  if (e.key === 'ArrowLeft') flip && flip.flipPrev();
+});
+document.getElementById('full').onclick = () => {
+  const el = document.documentElement;
+  (document.fullscreenElement ? document.exitFullscreen() : (el.requestFullscreen ? el.requestFullscreen() : Promise.reject())).catch(() => {});
+};
+if (!document.documentElement.requestFullscreen) document.getElementById('full').hidden = true;
+</script>
+</body>
+</html>
